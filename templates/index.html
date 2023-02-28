@@ -57,10 +57,12 @@ input[class='inactive']{
     background-image: url('note.svg')!important;
     background-size: contain;
     background-repeat: no-repeat;
-    background-position: center;}
+    background-position: center;
+}
 button[class="inactive"]{
     border-color: grey!important;
     color: grey!important;
+    pointer-events: none;
 
 }
 input[class='active'] {
@@ -105,6 +107,7 @@ button{
 </style>
 
 <script>
+let gameChanger = false;
 const handleFiles = () =>
 {
         const toActivate = ['file-input', 'file-button']
@@ -118,8 +121,17 @@ const generate = () =>{
         console.log('You must choose a file')
         return;
     }
+    if(gameChanger){
+         console.log('Wait for your file')
+        return;
+    }
+    gameChanger = true;
+    console.log('generating...')
     const fileInput = document.getElementById('file-input');
     const file = fileInput.files[0];
+              document.getElementById('file-button').className='inactive'
+
+
     document.getElementById('loader').style.display='inherit'
     document.getElementById('note-that').style.display='inherit'
     const xhr = new XMLHttpRequest();
@@ -147,12 +159,14 @@ const generate = () =>{
         document.getElementById('file-button').className='inactive'
         const fileInput = document.getElementById('file-input');
               fileInput.value = '';
-              fileInput.form.reset();
 
         window.URL.revokeObjectURL(link.href);
+        gameChanger = false
+
       } else {
         console.error('Error:', xhr.status);
       }
     };
 }
 </script>
+
