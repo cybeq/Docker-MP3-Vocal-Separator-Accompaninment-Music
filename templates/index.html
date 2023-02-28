@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<h1>Vocal/Accompaninment separator</h1>
+<input class="inactive" type="file"  title="select or drag mp3 file here" accept=".mp3" onchange="handleFiles(this.files)" id="file-input">
+ <h1 id="drag">Drag or select *.mp3 file</h1>
+<div id="loader" style="width: fit-content; height:fit-content" class="loader">
+    <svg xmlns="http://www.w3.org/2000/svg" width="46" height="46" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16">
+  <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+  <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+</svg>
+</div>
+    <h3 id="note-that">Your file will download automatically. Wait...</h3>
+<button id="file-button" class="inactive" onclick="generate()">⛏ Convert</button>
+
+</body>
+</html>
+<style>
+    #loader{
+         animation: rotate 2s linear infinite;
+        display: none;
+    }
+    #note-that{
+        display: none;
+    }
+
+    body{
+        background: #171718;
+        color:white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+    }
+#file-input {
+    width: 400px;
+    height: 200px;
+    background-color: #1b1b23;
+    padding:40px;
+    opacity: 0.8;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border:solid white 4px ;
+    border-radius: 20px;
+    display: block;
+    color: transparent;
+    transition: height 1s ease;
+}
+
+input[class='inactive']{
+    background-image: url('note.svg')!important;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;}
+button[class="inactive"]{
+    border-color: grey!important;
+    color: grey!important;
+
+}
+input[class='active'] {
+    border:none!important;
+    background: none!important;
+    height:0!important;
+
+}
+button[class="active"]{
+    border-color: white!important;
+    color: white!important;
+      background: #291e46;
+    cursor: grab;
+}
+
+
+#file-input::file-selector-button {
+  display: none;
+}
+button{
+    padding-inline: 40px;
+    width:480px;border-radius: 20px;
+    border: solid white 3px;
+    background: none;
+    color:white;
+    font-family: Inconsolata;
+    font-weight: bold;
+    height:50px;
+    margin-top:50px;
+    display:block
+}
+
+@keyframes rotate {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+</style>
+
+<script>
+const handleFiles = () =>
+{
+        const toActivate = ['file-input', 'file-button']
+        toActivate.forEach(domElementID =>{
+            document.getElementById(domElementID).className = 'active'
+        })
+        document.getElementById('drag').style.display='none'
+}
+const generate = () =>{
+    if(!document.getElementById('file-input').files[0]){
+        console.log('You must choose a file')
+        return;
+    }
+    const fileInput = document.getElementById('file-input');
+    const file = fileInput.files[0];
+    document.getElementById('loader').style.display='inherit'
+    document.getElementById('note-that').style.display='inherit'
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', '/convert');
+    xhr.responseType = 'blob';
+
+    const formData = new FormData();
+    formData.append('file', file);
+    xhr.send(formData);
+
+
+    xhr.onload = function() {
+      if (xhr.status === 200) {
+
+        const blob = new Blob([xhr.response], {type: 'application/zip'});
+
+
+        const link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.download = 'output.zip';
+        link.click();
+        document.getElementById('loader').style.display='none'
+        document.getElementById('note-that').style.display='none'
+        document.getElementById('file-input').className='inactive'
+        document.getElementById('file-button').className='inactive'
+        const fileInput = document.getElementById('file-input');
+              fileInput.value = '';
+              fileInput.form.reset();
+
+        window.URL.revokeObjectURL(link.href);
+      } else {
+        console.error('Error:', xhr.status);
+      }
+    };
+}
+</script>
